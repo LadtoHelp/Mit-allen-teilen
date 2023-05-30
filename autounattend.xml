@@ -1,153 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-<unattend xmlns="urn:schemas-microsoft-com:unattend">
-    <settings pass="specialize">
-        <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <OEMInformation>
-                <Manufacturer>Microsoft</Manufacturer>
-                <Model>Dell</Model>
-                <SupportAppURL>https://blogs.itpro.es/octaviordz</SupportAppURL>
-                <SupportHours>7:00a.m. a 9:00 p.m.</SupportHours>
-                <SupportURL>https://blogs.itpro.es/octaviordz</SupportURL>
-            </OEMInformation>
-            <!-- You can change the timezone below as needed -->
-            <!-- <TimeZone>Mountain Standard Time</TimeZone> -->
-        </component>
-        <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <RunSynchronous>
-                <RunSynchronousCommand wcm:action="add">
-                    <Order>1</Order>
-                    <Path>cmd /c PowerCfg.exe /s 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c</Path>
-                </RunSynchronousCommand>
-                <RunSynchronousCommand wcm:action="add">
-                    <Order>2</Order>
-                    <Path>cmd /c md %WINDIR%\Setup\Scripts</Path>
-                </RunSynchronousCommand>
-                <RunSynchronousCommand wcm:action="add">
-                    <Order>3</Order>
-                    <Path>cmd /c copy D:\SetupComplete.cmd %WINDIR%\Setup\Scripts</Path>
-                </RunSynchronousCommand>
-            </RunSynchronous>
-        </component>
-    </settings>
+<unattend xmlns="urn:schemas-microsoft-com:unattend"
+    xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
     <settings pass="windowsPE">
-        <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
             <SetupUILanguage>
                 <UILanguage>en-US</UILanguage>
             </SetupUILanguage>
-            <InputLocale>en-US</InputLocale>
-            <SystemLocale>en-US</SystemLocale>
+            <InputLocale>0409:00000409</InputLocale>
+            <SystemLocale>en-AU</SystemLocale>
             <UILanguage>en-US</UILanguage>
-            <UserLocale>en-US</UserLocale>
+            <UserLocale>en-AU</UserLocale>
         </component>
-        <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+            <ImageInstall>
+                <OSImage>
+                    <InstallTo>
+                        <DiskID>0</DiskID>
+                        <PartitionID>4</PartitionID>
+                    </InstallTo>
+                    <InstallFrom>
+                        <MetaData wcm:action="add">
+                            <Key>/IMAGE/INDEX</Key>
+                            <Value>2</Value>
+                        </MetaData>
+                    </InstallFrom>
+                </OSImage>
+            </ImageInstall>
+            <UserData>
+                <AcceptEula>true</AcceptEula>
+                <ProductKey>
+                    <WillShowUI>Always</WillShowUI>
+                </ProductKey>
+            </UserData>
             <DiskConfiguration>
-                <!-- Format disk 0 using UEFI partitioning -->
                 <Disk wcm:action="add">
                     <CreatePartitions>
-                        <!-- Windows RE Tools partition -->
                         <CreatePartition wcm:action="add">
                             <Order>1</Order>
-                            <Size>300</Size>
+                            <Size>500</Size>
                             <Type>Primary</Type>
                         </CreatePartition>
-                        <!-- System partition (ESP) -->
                         <CreatePartition wcm:action="add">
                             <Order>2</Order>
-                            <Size>500</Size>
+                            <Size>100</Size>
                             <Type>EFI</Type>
                         </CreatePartition>
-                        <!-- Microsoft reserved partition (MSR) -->
                         <CreatePartition wcm:action="add">
                             <Order>3</Order>
-                            <Size>128</Size>
+                            <Size>16</Size>
                             <Type>MSR</Type>
                         </CreatePartition>
-                        <!-- Windows partition -->
                         <CreatePartition wcm:action="add">
-                            <Order>4</Order>
                             <Extend>true</Extend>
+                            <Order>4</Order>
                             <Type>Primary</Type>
                         </CreatePartition>
                     </CreatePartitions>
+                    <DiskID>0</DiskID>
+                    <WillWipeDisk>true</WillWipeDisk>
                     <ModifyPartitions>
-                        <!-- Windows RE Tools partition -->
                         <ModifyPartition wcm:action="add">
-                            <Order>1</Order>
-                            <PartitionID>1</PartitionID>
-                            <Label>WINRE</Label>
                             <Format>NTFS</Format>
-                            <TypeID>de94bba4-06d1-4d40-a16a-bfd50179d6ac</TypeID>
+                            <Label>WINRE</Label>
+                            <TypeID>DE94BBA4-06D1-4D40-A16A-BFD50179D6AC</TypeID>
+                            <PartitionID>1</PartitionID>
+                            <Order>1</Order>
                         </ModifyPartition>
-                        <!-- System partition (ESP) -->
                         <ModifyPartition wcm:action="add">
+                            <Format>FAT32</Format>
+                            <Label>SYSTEM</Label>
                             <Order>2</Order>
                             <PartitionID>2</PartitionID>
-                            <Label>System</Label>
-                            <Format>FAT32</Format>
                         </ModifyPartition>
-                        <!-- Microsoft reserved partition (MSR) -->
                         <ModifyPartition wcm:action="add">
                             <Order>3</Order>
                             <PartitionID>3</PartitionID>
                         </ModifyPartition>
-                        <!-- Windows partition -->
                         <ModifyPartition wcm:action="add">
+                            <Format>NTFS</Format>
+                            <Label>WINDOWS</Label>
+                            <Letter>C</Letter>
                             <Order>4</Order>
                             <PartitionID>4</PartitionID>
-                            <Label>Windows</Label>
-                            <Format>NTFS</Format>
                         </ModifyPartition>
                     </ModifyPartitions>
-                    <!-- If the USB detects as disk 0 on machine change the below <DiskID> to 1 so it formats the disk on the devices -->
-                    <DiskID>0</DiskID>
-                    <WillWipeDisk>true</WillWipeDisk>
                 </Disk>
                 <WillShowUI>OnError</WillShowUI>
             </DiskConfiguration>
-            <ImageInstall>
-                <OSImage>
-                    <InstallFrom>
-                        <Path>install.swm</Path>
-                        <MetaData wcm:action="add">
-                            <Key>/IMAGE/INDEX</Key>
-                            <Value>5</Value>
-                        </MetaData>
-                    </InstallFrom>
-                    <InstallToAvailablePartition>true</InstallToAvailablePartition>
-                </OSImage>
-            </ImageInstall>
-            <RunSynchronous>
-                <RunSynchronousCommand>
-                    <Order>1</Order>
-                    <!-- This sets the power scheme to high performance in WinPE for faster imaging -->
-                    <Path>cmd /c PowerCfg.exe /s 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c</Path>
-                </RunSynchronousCommand>
-                <RunSynchronousCommand wcm:action="add">
-                    <Order>3</Order>
+            <RunAsynchronous>
+                <RunAsynchronousCommand wcm:action="add">
+                    <Order>2</Order>
                     <Path>cmd.exe /c ECHO HELLO &gt; C:\temp\HELLO.txt</Path>
+                </RunAsynchronousCommand>
+            </RunAsynchronous>
+            <RunSynchronous>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>1</Order>
+                    <Path>cmd.exe /c md C:\temp</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>2</Order>
-                    <Path>cmd.exe /c md C:\temp</Path>
+                    <Path>cmd.exe /c ECHO HELLO &gt; C:\temp\HELLO.txt</Path>
                 </RunSynchronousCommand>
             </RunSynchronous>
         </component>
-        <component name="Microsoft-Windows-PnpCustomizationsWinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <DriverPaths>
-                <PathAndCredentials wcm:keyValue="3d850527" wcm:action="add">
-                    <Path>\storage</Path>
-                </PathAndCredentials>
-            </DriverPaths>
-        </component>
     </settings>
     <settings pass="offlineServicing">
-        <component name="Microsoft-Windows-PnpCustomizationsNonWinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <component name="Microsoft-Windows-PnpCustomizationsNonWinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <DriverPaths>
-                <PathAndCredentials wcm:keyValue="cd16ab11" wcm:action="add">
-                    <Path>\drivers\</Path>
+                <PathAndCredentials wcm:action="add" wcm:keyValue="1">
+                    <Path>C:\Drivers</Path>
+                </PathAndCredentials>
+                <PathAndCredentials wcm:action="add">
+                    <Path>C:\Drivers</Path>
                 </PathAndCredentials>
             </DriverPaths>
         </component>
     </settings>
-    <cpi:offlineImage cpi:source="wim://pc-c7bgm53/deploymentshare$/operating%20systems/windows%2010/sources/install.wim#Windows 10 Pro" xmlns:cpi="urn:schemas-microsoft-com:cpi" />
+    <cpi:offlineImage cpi:source="wim://pc-c7bgm53/deploymentshare$/operating%20systems/windows%2010/sources/install.wim#Windows 10 Pro"
+        xmlns:cpi="urn:schemas-microsoft-com:cpi" />
 </unattend>
