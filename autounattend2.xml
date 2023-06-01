@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <unattend xmlns="urn:schemas-microsoft-com:unattend">
     <settings pass="specialize">
-        <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <OEMInformation>
-                <Manufacturer>Microsoft</Manufacturer>
-                <Model>Dell</Model>
-                <SupportAppURL>https://blogs.itpro.es/octaviordz</SupportAppURL>
-                <SupportHours>7:00a.m. a 9:00 p.m.</SupportHours>
-                <SupportURL>https://blogs.itpro.es/octaviordz</SupportURL>
-            </OEMInformation>
-            <!-- You can change the timezone below as needed -->
-            <!-- <TimeZone>Mountain Standard Time</TimeZone> -->
-        </component>
         <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <RunSynchronous>
                 <RunSynchronousCommand wcm:action="add">
@@ -20,11 +9,7 @@
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>2</Order>
-                    <Path>cmd /c md %WINDIR%\Setup\Scripts</Path>
-                </RunSynchronousCommand>
-                <RunSynchronousCommand wcm:action="add">
-                    <Order>3</Order>
-                    <Path>cmd /c copy D:\SetupComplete.cmd %WINDIR%\Setup\Scripts</Path>
+                    <Path>cmd /c md C:\specialize</Path>
                 </RunSynchronousCommand>
             </RunSynchronous>
         </component>
@@ -47,7 +32,7 @@
                         <!-- Windows RE Tools partition -->
                         <CreatePartition wcm:action="add">
                             <Order>1</Order>
-                            <Size>300</Size>
+                            <Size>1024</Size>
                             <Type>Primary</Type>
                         </CreatePartition>
                         <!-- System partition (ESP) -->
@@ -123,15 +108,18 @@
                     <Path>cmd /c PowerCfg.exe /s 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
-                    <Order>3</Order>
-                    <Path>cmd.exe /c ECHO HELLO &gt; C:\temp\HELLO.txt</Path>
-                </RunSynchronousCommand>
-                <RunSynchronousCommand wcm:action="add">
                     <Order>2</Order>
                     <Path>cmd.exe /c md C:\temp</Path>
                 </RunSynchronousCommand>
             </RunSynchronous>
             <UseConfigurationSet>true</UseConfigurationSet>
+            <UserData>
+                <ProductKey>
+                    <WillShowUI>OnError</WillShowUI>
+                    <Key>VK7JG-NPHTM-C97JM-9MPGT-3V66T</Key>
+                </ProductKey>
+                <AcceptEula>false</AcceptEula>
+            </UserData>
         </component>
         <component name="Microsoft-Windows-PnpCustomizationsWinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <DriverPaths>
@@ -150,5 +138,5 @@
             </DriverPaths>
         </component>
     </settings>
-    <cpi:offlineImage cpi:source="wim://pc-c7bgm53/deploymentshare$/operating%20systems/windows%2010/sources/install.wim#Windows 10 Pro" xmlns:cpi="urn:schemas-microsoft-com:cpi" />
+    <cpi:offlineImage cpi:source="wim:c:/users/lerdsouza/downloads/windows/sources/install.wim#Windows 10 Enterprise Evaluation" xmlns:cpi="urn:schemas-microsoft-com:cpi" />
 </unattend>
