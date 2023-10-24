@@ -48,8 +48,14 @@ if (
     Write-Log -Message "URI accessible. Checking file details" -Severity 1
     
     #Get source file modified date
-    $SitesdatafilelastModified = (Invoke-WebRequest -Uri $FullUri -UseBasicParsing).Headers.'Last-Modified' | Get-Date
-    Write-Log -Message "Data file last modified $($SitesdatafilelastModified | Out-String)" -Severity 1
+    try {
+        $SitesdatafilelastModified = (Invoke-WebRequest -Uri $FullUri -UseBasicParsing).Headers.'Last-Modified' | Get-Date
+        Write-Log -Message "Data file last modified $($SitesdatafilelastModified | Out-String)" -Severity 1
+    }
+    catch {
+        Write-Log -Message "$_" -Severity 3
+    }
+    
 
 
 
@@ -167,7 +173,8 @@ ForEach ($SourceCLT_Printer in $SourceCLT_Printers) {
     if (!(Get-Printer -Name $CLTPrinterName -ErrorAction SilentlyContinue)) {
         Write-Host "$CLTPrinterName - Not Mapped"
         Exit 1
-    } else {
+    }
+    else {
         Write-Host "[SUCCESS] $CLTPrinterName Mapped"
     }
 
