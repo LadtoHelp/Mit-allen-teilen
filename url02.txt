@@ -1,1 +1,0 @@
-https://portal.azure.com/?feature.msaljs=true#@vicroads.com.au/resource/subscriptions/f4fbf1c9-5bad-4ad7-92a5-3110179bef20/resourceGroups/rg-sec-prod-ae-secops-01/providers/Microsoft.KeyVault/vaults/kvsecprodaesecops01/secrets
