@@ -1,0 +1,75 @@
+# Install modules for this script (Az.Avd is from Sander Rozemuller / https://rozemuller.com)
+
+Install-Module Az.DesktopVirtualization
+Install-Module Az.KeyVault
+Install-Module Az.Avd
+Install-Module Az.Compute
+
+# Import modules for this script
+Import-Module Az.DesktopVirtualization
+Import-Module Az.KeyVault
+Import-Module Az.Avd
+Import-Module Az.Compute
+
+# Connect to tenant with the right subscription
+$parametersAz = @{
+    Tenant = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+    Subscription = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+}
+
+
+Connect-AzAccount @parametersAz
+
+# Connect to AVD
+
+$TenantId = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+$SubscriptionId = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
+Connect-Avd -DeviceCode -TenantID $TenantId -SubscriptionId $SubscriptionId
+
+# Creating the keyvault for storing account information
+
+$parametersKV = @{
+    Name = 'm2cavdkeyvault01'
+    ResourceGroupName = 'M2C-RG-AVD-PL-PS01'
+    Location = 'westeurope'
+}
+
+$keyVault = New-AzKeyVault @parametersKV
+
+$secretvalue = ConvertTo-SecureString "Hte2FTT4tggf" -AsPlainText -Force
+
+$secret = Set-AzKeyVaultSecret -VaultName "m2cavdkeyvault01" -Name "domainjoinpassword" -SecretValue $secretvalue
+
+# Creating the session hosts (I will use a marketplace image) (InitialNumber for the start of the next sessionhost number)
+
+$HostpoolName = 'M2C-AVD-PL-PS01'
+$ResourceGroupName = 'M2C-RG-AVD-PL-PS01'
+$sessionHostCount = '1'
+#$InitialNumber = ''
+$Publisher = 'microsoftwindowsdesktop'
+$Offer = 'windows-11'
+$Sku = 'win11-22h2-avd'
+$Location = 'westeurope'
+$VmSize = 'Standard_D2s_v3'
+$diskType = 'Premium_LRS'
+$LocalAdmin = 'avdadmin'
+$LocalPass = 'Hte2FTT4tggf2'
+$Prefix = 'M2C-AVD'
+$SubnetID = '/subscriptions/.../resourceGroups/M2C-RG-AVD-PL-PS01/providers/Microsoft.Network/virtualNetworks/M2C-AVD-VNET01/subnets/M2C-AVD-SUBNET01/'
+$Domain = 'm2c.local'
+$OU = 'OU=Pooled Desktop,OU=AVD,OU=Devices,OU=M2C,DC=m2c,DC=local'
+$DomainJoinAccount = 'domainjoin@m2c.local'
+$DomainJoinPassword = $secretvalue
+
+New-AvdSessionHost -HostpoolName $HostpoolName -ResourceGroupName $ResourceGroupName -SessionHostCount $sessionHostCount -Publisher $Publisher -Offer $Offer -SKU $Sku -Location $Location -VmSize $VmSize -Disktype $Disktype -LocalAdmin $LocalAdmin -LocalPass $LocalPass -Prefix $Prefix -SubnetID $SubnetID -Domain $Domain -OU $OU -DomainJoinAccount $DomainJoinAccount -DomainJoinPassword $DomainJoinPassword
+
+# Configure monitoring
+
+$parametersLAW = @{
+    Location = 'westeurope'
+    Name = 'm2clawavd'
+    ResourceGroupName = 'M2C-RG-AVD-PL-PS01'
+}
+
+New-AzOperationalInsightsWorkspace @parametersLAW
