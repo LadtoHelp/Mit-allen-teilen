@@ -28,7 +28,7 @@ $AppRegistryKey = "HKLM:\Software\$OrganisationShortCode\$($appname)"
 function Get-IniValue ($filePath)
 {
 	$ini = @{}
-	switch -regex -file $FilePath
+	switch -regex -file "$($FilePath)"
 	{
     	"^\[(.+)\]" # Section
     	{
@@ -58,6 +58,9 @@ If ($deploymentType -ine 'Uninstall' ) {
  
 
     #Pre-Install
+    if (!(Test-Path "$($env:TEMP)\PRE")) {
+        md "$($env:TEMP)\PRE"
+    }
     Start-Process -FilePath "$($LGPOExe)" -ArgumentList "/b `"$($env:TEMP)\PRE`"" -NoNewWindow -Wait -PassThru
     
     $GptTmplinf = (Get-ChildItem "$($env:TEMP)\PRE" -Filter GptTmpl.inf -Recurse | Sort-Object lastwritetime | Select-Object -Last 1).fullname
