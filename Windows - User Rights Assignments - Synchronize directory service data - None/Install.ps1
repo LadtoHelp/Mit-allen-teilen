@@ -19,7 +19,7 @@ param (
 [String]$appName = 'Windows - User Rights Assignments - Synchronize directory service data - NONE'
 $OrganisationShortCode = 'AEC'
 
-$dirFiles = Join-Path "$($PSScriptRoot)\Files" 
+$dirFiles = Join-Path "$($PSScriptRoot)" "Files" 
 $LGPOExe = Join-Path "$($dirFiles)" LGPO.exe
 $SecTemplateKey = "SeSyncAgentPrivilege"
 $SecTemplateValue = ''
@@ -30,20 +30,20 @@ function Get-IniValue ($filePath)
 	$ini = @{}
 	switch -regex -file $FilePath
 	{
-    	“^\[(.+)\]” # Section
+    	"^\[(.+)\]" # Section
     	{
         	$section = $matches[1]
         	$ini[$section] = @{}
         	$CommentCount = 0
     	}
-    	“^(;.*)$” # Comment
+    	"^(;.*)$" # Comment
     	{
         	$value = $matches[1]
         	$CommentCount = $CommentCount + 1
         	$name = “Comment” + $CommentCount
         	$ini[$section][$name] = $value
     	}
-    	“(.+?)\s*=(.*)” # Key
+    	"(.+?)\s*=(.*)" # Key
     	{
         	$name,$value = $matches[1..2]
         	$ini[$section][$name] = $value
