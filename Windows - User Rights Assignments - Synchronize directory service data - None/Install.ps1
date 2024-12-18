@@ -23,9 +23,34 @@ $dirFiles = Join-Path "$($PSScriptRoot)\Files"
 $LGPOExe = Join-Path "$($dirFiles)" LGPO.exe
 $SecTemplateKey = "SeSyncAgentPrivilege"
 $SecTemplateValue = ''
-$AppRegistryKey = "HKLM\Software\$OrganisationShortCode\$($appname)"
+$AppRegistryKey = "HKLM:\Software\$OrganisationShortCode\$($appname)"
 
-
+function Get-IniValue ($filePath)
+{
+	$ini = @{}
+	switch -regex -file $FilePath
+	{
+    	“^\[(.+)\]” # Section
+    	{
+        	$section = $matches[1]
+        	$ini[$section] = @{}
+        	$CommentCount = 0
+    	}
+    	“^(;.*)$” # Comment
+    	{
+        	$value = $matches[1]
+        	$CommentCount = $CommentCount + 1
+        	$name = “Comment” + $CommentCount
+        	$ini[$section][$name] = $value
+    	}
+    	“(.+?)\s*=(.*)” # Key
+    	{
+        	$name,$value = $matches[1..2]
+        	$ini[$section][$name] = $value
+    	}
+	}
+	return $ini
+}
 
 
 If ($deploymentType -ine 'Uninstall' ) {
@@ -36,7 +61,8 @@ If ($deploymentType -ine 'Uninstall' ) {
     Start-Process -FilePath "$($LGPOExe)" -ArgumentList "/b `"$($env:TEMP)\PRE`"" -NoNewWindow -Wait -PassThru
     
     $GptTmplinf = (Get-ChildItem "$($env:TEMP)\PRE" -Filter GptTmpl.inf -Recurse | Sort-Object lastwritetime | Select-Object -Last 1).fullname
-    $GptTmplinfValuePRE = Get-IniValue "$($GptTmplinf)" -Section 'Privilege Rights' -Key $SecTemplateKey
+    $GptTmplinfValuePRE = Get-IniValue "$($GptTmplinf)"
+    $GptTmplinfValuePRE = $GptTmplinfValuePRE.'Privilege Rights'.'SeSyncAgentPrivilege'
 
     #Install
     Start-Process -FilePath "$($LGPOExe)" -ArgumentList "/g `"$($dirFiles)`"" -NoNewWindow -Wait -PassThru
@@ -49,7 +75,7 @@ If ($deploymentType -ine 'Uninstall' ) {
         
         New-ItemProperty -Path "$($AppRegistryKey)" -Name 'Status' -Value $true -PropertyType "string" -Force | Out-Null
 
-        #Set the previous value in the registry
+        #Set the original value in the registry for rollback
         New-ItemProperty -Path "$($AppRegistryKey)" -Name 'PrevValue' -Value "$($GptTmplinfValuePRE)" -PropertyType "string" -Force | Out-Null
     
 }
