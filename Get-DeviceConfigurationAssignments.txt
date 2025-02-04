@@ -1,0 +1,125 @@
+<#  
+    .SYNOPSIS
+    Retrieves the assignments of all Device Configuration Policies in Intune
+    .DESCRIPTION
+    This script will retrieve all Device Configuration Policies in Intune and their assignments. It will output the results to a CSV file.
+
+    .HISTORY 
+    2021-09-01 - Initial version
+    2024-02-04 - v2 - Added support for the updated Graph Modules
+    
+    .NOTES
+
+    .AUTHOR
+    Leroy D'Souza - Deloitte Australia
+
+
+#>
+
+
+
+
+#Requires -Modules Microsoft.Graph.Groups
+#Requires -Modules Microsoft.Graph.Authentication
+#Requires -Modules Microsoft.Graph.DeviceManagement
+#Requires -Modules Microsoft.Graph.beta.devicemanagement
+
+$Policies = Get-MgBetaDeviceManagementConfigurationPolicy -All -Filter "platforms eq 'windows10'" #| ? { $_.Platforms -match 'win' }
+$Policies += Get-MgBetaDeviceManagementDeviceConfiguration -All #| ? { $_.Platforms -match 'win' }
+$Policies += Get-MgBetaDeviceManagementGroupPolicyConfiguration #-Filter "(isof('microsoft.graph.windows10CustomConfiguration'))"
+$Groups = Get-mgGroup -All
+$Filters = Get-MgBetaDeviceManagementAssignmentFilter -All
+$PolicySets = (invoke-mgGraphRequest -Uri "https://graph.microsoft.com/beta/deviceAppManagement/policySets" )
+
+"Found $($Policies.count) policies"
+$PolicyResults = @()
+
+foreach ($Policy in $Policies) {  
+
+    If  ($null -ne $Policy.PolicyConfigurationIngestionType) {
+        "Group Policy"
+        $DCP = 'deviceManagement/groupPolicyConfigurations'
+        $PolicyName = $Policy.DisplayName
+    }
+    Elseif ($null -eq $Policy.AdditionalProperties.'@odata.type') {
+        $DCP = 'deviceManagement/configurationPolicies'
+        $PolicyName = $Policy.name
+    }
+    Else {
+        $DCP = 'deviceManagement/deviceconfigurations'
+        $PolicyName = $policy.DisplayName
+    }
+
+    Write-Host "Checking $PolicyName"
+
+    $Assignments = invoke-mgGraphRequest -Uri "https://graph.microsoft.com/beta/$DCP/$($Policy.id)/assignments"
+    $Assignments = $Assignments.Value
+
+    $Assignmentresult = @()
+
+
+    foreach ($Assignment in $Assignments) {
+        
+        
+
+        $GroupIntent = $Assignment.target.'@odata.type'
+        $FilterID = $Assignment.target.deviceAndAppManagementAssignmentFilterId
+
+        if ($GroupIntent -match 'allDevices' ) {
+            $AssignedGroupDisplayName = "All Devices"
+            $Intent = 'Included'
+        }
+        Else { $AssignedGroupDisplayName = ($Groups | ? { $_.Id -match $($Assignment.target.groupid) }).DisplayName }
+
+        If ($GroupIntent -match 'exclusion') {
+            $Intent = 'Exclusion'
+        }
+        #Else { $Intent = $null }
+
+        
+        If ($GroupIntent -match 'groupAssignmentTarget') {
+            $Intent = 'Included'
+        }
+        Else { $Intent = $null }
+
+        if ($Assignment.source -eq 'policySets') { 
+            $policySetName = $($PolicySets.Value | ? { $_.id -match $($Assignment.id.Split('_')[2]) }).displayname 
+        }
+        else {
+            $policySetName = $null
+        }
+
+
+
+        $properties = [ordered]@{
+            'DisplayName'            = $PolicyName
+            Description              = $Policy.Description
+            'ID'                     = $Policy.id
+            'Type'                   = $Policy.'@odata.type'
+            Assigned                 = $true
+            Intent                   = $Intent
+            GroupIntent              = $GroupIntent
+            AssignedGroupID          = $Assignment.target.groupid
+            AssignedGroupDisplayName = $AssignedGroupDisplayName
+            Source                   = $Assignment.source
+            policySetName            = $policySetName
+            CreatedDateTime          = $Policy.CreatedDateTime
+            LastModifiedDateTime     = $Policy.LastModifiedDateTime
+            platforms                = $Policy.platforms
+            AssignmentFilter         = ($Filters | ? {$_.Id -eq $FilterID}).DisplayName
+            AssignmentFilterIntent   = $Assignment.target.deviceAndAppManagementAssignmentFilterType
+        }
+    
+        $Assignmentresult += New-Object -TypeName psobject -Property $properties
+    
+    }
+
+
+    $PolicyResults += $Assignmentresult
+    Start-sleep -mi 500
+ 
+}
+
+$PolicyResults |  Export-Csv -nti "C:\temp\deviceAssignments$(Get-date -fo FileDateTime).csv"
+
+#$PolicyResults | Out-GridView -PassThru
