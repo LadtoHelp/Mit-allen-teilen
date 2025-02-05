@@ -3,13 +3,31 @@
     Retrieves the assignments of all Device Configuration Policies in Intune
     .DESCRIPTION
     This script will retrieve all Device Configuration Policies in Intune and their assignments. It will output the results to a CSV file.
+    The script will take a while to run as it needs to query the Graph API for each policy and its assignments.
+    The script will output the results to a CSV file in the C:\temp folder. You can change this by modifying the Export-CSV line at the end of the script.
+
+    You need to use the Connect-MgGraph cmdlet to authenticate to the Graph API before running this script.
+
+    Connect-MgGraph -Scopes `
+    "Device.Read.All", `
+    "DeviceManagementConfiguration.Read.All", `
+    "DeviceManagementManagedDevices.Read.All", `
+    "DeviceManagementServiceConfig.Read.All", `
+    "DeviceManagementApps.Read.All", `
+    "Domain.Read.All", `
+    "Group.Read.All", `
+    "GroupMember.Read.All"
+
+
 
     .HISTORY 
     2021-09-01 - Initial version
     2024-02-04 - v2 - Added support for the updated Graph Modules
     
     .NOTES
-
+    to run this script you will need to have the Microsoft.Graph and Microsoft.Graph.DeviceManagement modules installed.
+    You will also need to have the required permissions to access the Intune Graph API.
+    
     .AUTHOR
     Leroy D'Souza - Deloitte Australia
 
